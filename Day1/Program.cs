@@ -49,7 +49,6 @@ int CalculateTotalDelta2(IEnumerable<int> leftData, Dictionary<int, int> rightDa
     int totalDelta = 0;
     foreach (var item in leftData)
     {
-        // Use ternary operation for a more concise count retrieval
         int count = rightDataCounts.ContainsKey(item) ? rightDataCounts[item] : 0;
         totalDelta += item * count;
     }
