@@ -41,7 +41,6 @@ foreach (var line in fileContents)
         
         if (line.Substring(leftPointer, 4) == multPattern)
         {
-            // Console.WriteLine($"{multPattern} found at {leftPointer}");
             var tempString = "";
             
             if (leftPointer + 12 <= line.Length)
