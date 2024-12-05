@@ -3,7 +3,7 @@
 var searchWord = "XMAS";
 
 var fileReader = new FileReader();
-var filePath = "test_data.txt";
+var filePath = "data.txt";
 var fileContents = fileReader.ReadFileContents(filePath);
 
 var dataStore = new List<List<char>>();
@@ -22,44 +22,72 @@ for (var row = 0; row <= dataStore.Count - 1; row++)
     {
         if (dataStore[row][col] == 'X')
         {
-            var right = cordList(row, row, col, col + searchWord.Length -1);
-            // var left = cordList(row, row, col - searchWord.Length + 1, col + 1);
-            // var left = cordList(row, row, col, col - searchWord.Length);
-            // var down = cordList(row, row + searchWord.Length, col, col);
-            // var up = cordList(row, row - searchWord.Length, col, col);
+            var right = newCordList(row, row, col, col + searchWord.Length - 1);
+            var left = newCordList(row, row, col, col - searchWord.Length + 1);
+            var down = newCordList(row, row + searchWord.Length - 1, col, col);
+            var up = newCordList(row, row - searchWord.Length + 1, col, col);
+            var upLeft = newCordList(row, row - searchWord.Length + 1, col, col - searchWord.Length + 1);
+            var upRight = newCordList(row, row - searchWord.Length + 1 , col, col + searchWord.Length - 1);
+            var downLeft = newCordList(row, row + searchWord.Length - 1, col, col - searchWord.Length + 1);
+            var downRight = newCordList(row, row + searchWord.Length - 1, col, col + searchWord.Length - 1);
             
-            var tempArray = new List<char>();
+            var rightArray = right
+                .Select(cord => dataStore[cord[0]][cord[1]])
+                .ToList();
+            foundCount += DoCordsEqualSearchWord(rightArray);
             
-            foreach (var cord in right)
-            {
-                Console.WriteLine($"In right looking for {dataStore[cord[0]][cord[1]]}");
-                tempArray.Add(dataStore[cord[0]][cord[1]]);
-            }
-            foundCount += DoCordsEqualSearchWord(tempArray);
+            var leftArray = left
+                .Select(cord => dataStore[cord[0]][cord[1]])
+                .ToList();
+            foundCount += DoCordsEqualSearchWord(leftArray);
             
-            // foreach (var cord in left)
-            // {
-            //     tempArray.Add(dataStore[cord[0]][cord[1]]);
-            // }
-            // tempArray.Reverse();
-            // foundCount += DoCordsEqualSearchWord(tempArray);
+            var downArray = down
+                .Select(cord => dataStore[cord[0]][cord[1]])
+                .ToList();
+            foundCount += DoCordsEqualSearchWord(downArray);
             
-            var _temmp = string.Join("", tempArray);
+            var upArray = up
+                .Select(cord => dataStore[cord[0]][cord[1]])
+                .ToList();
+            foundCount += DoCordsEqualSearchWord(upArray);
+            
+            var upLeftArray = upLeft
+                .Select(cord => dataStore[cord[0]][cord[1]])
+                .ToList();
+            foundCount += DoCordsEqualSearchWord(upLeftArray);
+            
+            var upRightArray = upRight
+                .Select(cord => dataStore[cord[0]][cord[1]])
+                .ToList();
+            foundCount += DoCordsEqualSearchWord(upRightArray);
+            
+            var downLeftArray = downLeft
+                .Select(cord => dataStore[cord[0]][cord[1]])
+                .ToList();
+            foundCount += DoCordsEqualSearchWord(downLeftArray);
+            
+            var downRigntArray = downRight
+                .Select(cord => dataStore[cord[0]][cord[1]])
+                .ToList();
+            foundCount += DoCordsEqualSearchWord(downRigntArray);
         }
     }
 }
 
 Console.WriteLine($"Found count = {foundCount}");
 
+void debugArray(List<char> arrayToCheck, int row, int col)
+{
+    var temp = string.Join("", arrayToCheck);
+    if (temp.Length == searchWord.Length)
+    {
+        Console.WriteLine($"Row: {row} Col: {col} String: {temp}");
+    }
+}
+
 int DoCordsEqualSearchWord(List<char> cordsToCheck)
 {
     var stringList = string.Join("", cordsToCheck);
-    
-    if (cordsToCheck.Count != 4)
-    {
-        return 0;
-    }
-
     if (stringList == searchWord)
     {
         return 1;
@@ -67,27 +95,51 @@ int DoCordsEqualSearchWord(List<char> cordsToCheck)
     return 0;
 };
 
-
-
-
-List<List<int>> cordList(int startRow, int stopRow, int startCol, int stopCol)
+List<List<int>> newCordList(int startRow, int stopRow, int startCol, int stopCol)
 {
-    if (startCol < 0 || startRow < 0)
-    {
-        return new List<List<int>>();
-    }
-    var rowIncreasing = startRow < stopRow;
-    var rowDecreasing = startRow > stopRow;
-    var colIncreasing = startCol < stopCol;
-    var colDecreasing = startCol > stopCol;
-    
+    int rowStep = startRow < stopRow ? 1 : (startRow > stopRow ? -1 : 0); // no row change
+    int colStep = startCol < stopCol ? 1 : (startCol > stopCol ? -1 : 0); // no col change
+
     var returnChords = new List<List<int>>();
 
-    if (!rowIncreasing && !rowDecreasing)
+    if (rowStep == 0) // Only columns are changing
     {
-        for (var col = startCol; col != stopCol; col+= colIncreasing ? 1 : -1)
+        for (var col = startCol; col != stopCol + colStep; col += colStep)
         {
-            returnChords.Add(new List<int>(){startRow, col});
+            var newCords = new List<int> {startRow, col};
+            if (AreValidCords(newCords))
+            {
+                returnChords.Add(newCords);
+            }
+        }
+    }
+    else if (colStep == 0) // Only rows are changing
+    {
+        for (var row = startRow; row != stopRow + rowStep; row += rowStep)
+        {
+            var newCords = new List<int> {row, startCol};
+            if (AreValidCords(newCords))
+            {
+                returnChords.Add([row, startCol]);
+            }
+        }
+    }
+    else // Both rows and columns are changing
+    {
+        var trow = startRow;
+        var tcol = startCol;
+        for (var i = 0; i < searchWord.Length; i++)
+        {
+            if (AreValidCords([trow, tcol]))
+            {
+                returnChords.Add([trow,tcol]);
+                trow += rowStep;
+                tcol += colStep;
+            }
+            else
+            {
+                return [];
+            }
         }
     }
 
@@ -95,6 +147,20 @@ List<List<int>> cordList(int startRow, int stopRow, int startCol, int stopCol)
     {
         return returnChords;
     }
-    
-    return new List<List<int>>();
+    return [];
+}
+
+bool AreValidCords(List<int> newCord)
+{
+    if (
+        newCord[0] <= dataStore.Count() - 1 &&
+        newCord[0] >= 0 &&
+        newCord[1] >= 0 &&
+        newCord[1] <= dataStore[0].Count() - 1
+    )
+    {
+        return true;
+    }
+
+    return false;
 }
