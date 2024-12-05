@@ -1,6 +1,7 @@
 ﻿using AOC2024_CSharp;
 
 var searchWord = "XMAS";
+var p2SearchWord = "MAS";
 
 var fileReader = new FileReader();
 var filePath = "data.txt";
@@ -14,7 +15,8 @@ foreach (var line in fileContents)
     dataStore.Add(chars.ToList());
 }
 
-var foundCount = 0;
+var p1FoundCount = 0;
+var p2FoundCount = 0;
 
 for (var row = 0; row <= dataStore.Count - 1; row++)
 {
@@ -34,47 +36,56 @@ for (var row = 0; row <= dataStore.Count - 1; row++)
             var rightArray = right
                 .Select(cord => dataStore[cord[0]][cord[1]])
                 .ToList();
-            foundCount += DoCordsEqualSearchWord(rightArray);
+            p1FoundCount += DoCordsEqualSearchWord(rightArray);
             
             var leftArray = left
                 .Select(cord => dataStore[cord[0]][cord[1]])
                 .ToList();
-            foundCount += DoCordsEqualSearchWord(leftArray);
+            p1FoundCount += DoCordsEqualSearchWord(leftArray);
             
             var downArray = down
                 .Select(cord => dataStore[cord[0]][cord[1]])
                 .ToList();
-            foundCount += DoCordsEqualSearchWord(downArray);
+            p1FoundCount += DoCordsEqualSearchWord(downArray);
             
             var upArray = up
                 .Select(cord => dataStore[cord[0]][cord[1]])
                 .ToList();
-            foundCount += DoCordsEqualSearchWord(upArray);
+            p1FoundCount += DoCordsEqualSearchWord(upArray);
             
             var upLeftArray = upLeft
                 .Select(cord => dataStore[cord[0]][cord[1]])
                 .ToList();
-            foundCount += DoCordsEqualSearchWord(upLeftArray);
+            p1FoundCount += DoCordsEqualSearchWord(upLeftArray);
             
             var upRightArray = upRight
                 .Select(cord => dataStore[cord[0]][cord[1]])
                 .ToList();
-            foundCount += DoCordsEqualSearchWord(upRightArray);
+            p1FoundCount += DoCordsEqualSearchWord(upRightArray);
             
             var downLeftArray = downLeft
                 .Select(cord => dataStore[cord[0]][cord[1]])
                 .ToList();
-            foundCount += DoCordsEqualSearchWord(downLeftArray);
+            p1FoundCount += DoCordsEqualSearchWord(downLeftArray);
             
             var downRigntArray = downRight
                 .Select(cord => dataStore[cord[0]][cord[1]])
                 .ToList();
-            foundCount += DoCordsEqualSearchWord(downRigntArray);
+            p1FoundCount += DoCordsEqualSearchWord(downRigntArray);
+        }
+
+        if (dataStore[row][col] == 'A')
+        {
+            var newCords = xCordList(row, col);
+            var leftDiag = newCords.Item1.Select(cord => dataStore[cord[0]][cord[1]]).ToList();
+            var rightDiag = newCords.Item2.Select(cord => dataStore[cord[0]][cord[1]]).ToList();
+            p2FoundCount += DoCordsXSearchWord(leftDiag, rightDiag);
         }
     }
 }
 
-Console.WriteLine($"Found count = {foundCount}");
+Console.WriteLine($"P1 Found count = {p1FoundCount}");
+Console.WriteLine($"P2 Found count = {p2FoundCount}");
 
 void debugArray(List<char> arrayToCheck, int row, int col)
 {
@@ -94,6 +105,20 @@ int DoCordsEqualSearchWord(List<char> cordsToCheck)
     }
     return 0;
 };
+
+int DoCordsXSearchWord(List<Char> left, List<Char> right)
+{
+    var leftWord = string.Join("", left);
+    var leftWordReversed = new string(leftWord.Reverse().ToArray());
+    var rightWord = string.Join("", right);
+    var rightWordReversed = new string(rightWord.Reverse().ToArray());
+
+    if ((leftWord == p2SearchWord || leftWordReversed == p2SearchWord) && (rightWord == p2SearchWord || rightWordReversed == p2SearchWord))
+    {
+        return 1;
+    }
+    return 0;
+}
 
 List<List<int>> newCordList(int startRow, int stopRow, int startCol, int stopCol)
 {
@@ -148,6 +173,40 @@ List<List<int>> newCordList(int startRow, int stopRow, int startCol, int stopCol
         return returnChords;
     }
     return [];
+}
+
+(List<List<int>>, List<List<int>>) xCordList(int row, int col)
+{
+    var leftDiagCords = new List<List<int>>();
+    leftDiagCords.Add([row - 1, col - 1]);
+    leftDiagCords.Add([row, col]);
+    leftDiagCords.Add([row + 1, col + 1]);
+    
+    var rightDiagCords = new List<List<int>>();
+    rightDiagCords.Add([row - 1, col + 1]);
+    rightDiagCords.Add([row, col]);
+    rightDiagCords.Add([row + 1, col - 1]);
+
+    var validLeft = true;
+    var validRight = true;
+
+    foreach (var cord in leftDiagCords)
+    {
+        if (!AreValidCords(cord))
+        {
+            return ([], []);
+        }
+    }
+    
+    foreach (var cord in rightDiagCords)
+    {
+        if (!AreValidCords(cord))
+        {
+            return ([], []);
+        }
+    }
+
+    return (leftDiagCords, rightDiagCords);
 }
 
 bool AreValidCords(List<int> newCord)
